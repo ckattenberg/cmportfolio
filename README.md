@@ -6,8 +6,8 @@ In an interview for Playboy Magazine in 1980, Lennon said the following about hi
 
 > [Paul] provided a lightness, an optimism, while I would always go for the sadness, the discords, the bluesy notes. There was a period when I thought I didn't write melodies, that Paul wrote those and I just wrote straight, shouting rock 'n' roll. But, of course, when I think of some of my own songs—"In My Life", or some of the early stuff, "This Boy"—I was writing melody with the best of them.
   
-I would be curious to see whether Lennon's characterization of the difference between his and Paul's songwriting styles are accurate.
+I would be curious to see whether Lennon's characterization of the difference between his and McCartney's songwriting styles are accurate. The spotify API provides some features by which this potential difference could be explored. For example, the *valence* and *energy* features of the AudioFeaturesObject could be useful.
 
 ### Corpus
 
-For this course, I will compare Beatles songs written (predominantly) by Paul McCartney to those written (predominantly) by John Lennon. To this end I will create two playlists on Spotify. One playlist for the McCartney songs and one for the Lennon songs. I will use the following webpage: http://www.myrsten.nu/worldnet/beatlesongs.htm as a guide to determine which song was written by whom. 
+For this course, I will compare Beatles songs written (predominantly) by Paul McCartney to those written (predominantly) by John Lennon. To this end I will create two playlists on Spotify. One playlist for the McCartney songs and one for the Lennon songs. I will use the following webpage: http://www.myrsten.nu/worldnet/beatlesongs.htm as a guide to determine which song was written by whom. The corpus contains 142 songs in total (70 written by Paul McCartney and 72 written by John Lennon).
