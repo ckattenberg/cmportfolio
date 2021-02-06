@@ -6,7 +6,7 @@ In an interview for Playboy Magazine in 1980, Lennon said the following about hi
 
 > [Paul] provided a lightness, an optimism, while I would always go for the sadness, the discords, the bluesy notes. There was a period when I thought I didn't write melodies, that Paul wrote those and I just wrote straight, shouting rock 'n' roll. But, of course, when I think of some of my own songs—"In My Life", or some of the early stuff, "This Boy"—I was writing melody with the best of them.
   
-I would be curious to see whether Lennon's characterization of the difference between his and McCartney's songwriting styles is accurate. The spotify API provides some features by which this potential difference could be explored. For example, the *valence* and *energy* features of the AudioFeaturesObject could be useful.
+I would be curious to see whether Lennon's characterization of the differences between his and McCartney's songwriting styles is accurate. The spotify API provides some features by which this potential difference could be explored. For example, the *valence* and *energy* features of the AudioFeaturesObject could be useful.
 
 ### Corpus
 
