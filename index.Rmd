@@ -15,15 +15,83 @@ library(spotifyr)
 ```
 
 ```{r}
-playlist_70 <- get_playlist_audio_features("", "67zYW4wCQezR6AH8EuNZ1Q")
-playlist_80 <- get_playlist_audio_features("", "23xQYspGsaIsztrKTHM8cN")
-playlist_90 <- get_playlist_audio_features("", "0MmrdphoTkHhChZR5ympER")
-playlist_00 <- get_playlist_audio_features("", "6dv5FbNRVlQelteqnNDFTe")
+john_songs <- get_playlist_audio_features("", "6Wxl8tFi8QruTJ8ERPFkFc")
+paul_songs <- get_playlist_audio_features("", "64vy4b9yg9tcvrf0a3XvdF")
 
 ```
+
 ```{r}
+all_songs <- 
+  bind_rows(
+    john_songs %>% mutate(category = "John"),
+    paul_songs %>% mutate(category = "Paul")
+  )
 ```
 
+
+
+```{r}
+ggplot(data = john_songs) + 
+  geom_point(mapping = aes(x = energy, y = valence)) +
+  theme_classic() +
+  ggtitle("John", subtitle = "Valence vs energy")
+
+ggplot(data = paul_songs) + 
+  geom_point(mapping = aes(x = energy, y = valence)) + 
+  theme_classic() +
+  ggtitle("Paul", subtitle = "Valence vs energy")
+
+ggplot(data = all_songs) + 
+  geom_point(mapping = aes(x = energy, y = valence, color = category)) +
+  theme_classic()
+```
+
+```{r}
+decades %>%                    # Start with awards.
+  mutate(
+    mode = ifelse(mode == 0, "Minor", "Major")
+  ) %>%
+  ggplot(                     # Set up the plot.
+    aes(
+      x = valence,
+      y = energy,
+      size = loudness,
+      colour = mode
+    )
+  ) +
+  geom_point() +              # Scatter plot.
+  geom_rug(size = 0.1) +      # Add 'fringes' to show data distribution. 
+  facet_wrap(~category) +     # Separate charts per playlist.
+  scale_x_continuous(         # Fine-tune the x axis.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),   # Use grid-lines for quadrants only.
+    minor_breaks = NULL       # Remove 'minor' grid-lines.
+  ) +
+  scale_y_continuous(         # Fine-tune the y axis in the same way.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),
+    minor_breaks = NULL
+  ) +
+  scale_colour_brewer(        # Use the Color Brewer to choose a palette.
+    type = "qual",            # Qualitative set.
+    palette = "Paired"        # Name of the palette is 'Paired'.
+  ) +
+  scale_size_continuous(      # Fine-tune the sizes of each point.
+    trans = "exp",            # Use an exp transformation to emphasise loud.
+    guide = "none"            # Remove the legend for size.
+  ) +
+  theme_light() +             # Use a simpler theme.
+  labs(                       # Make the titles nice.
+    x = "Valence",
+    y = "Energy",
+    colour = "Mode"
+  )
+```
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 ### Lennon-McCartney
 
