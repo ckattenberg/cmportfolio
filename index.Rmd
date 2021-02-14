@@ -80,7 +80,13 @@ ggplot(data = paul_songs) +
 ggplot(data = all_songs) + 
   geom_point(mapping = aes(x = valence, y = energy, color = category, alpha = 1, size = loudness)) +
   theme_classic() + 
-  scale_color_manual(values=wes_palette(n=3, name="GrandBudapest1"))
+  scale_color_manual(values=wes_palette(n=3, name="GrandBudapest1")) + 
+  scale_size(range = c(-5, 5))
+
+ggplot(data = all_songs) + 
+  geom_point(mapping = aes(x = valence, y = energy, alpha = 1, size = loudness, color = mode)) +
+  facet_wrap(~category) +
+  theme_light() 
 ```
 
 ```{r}
