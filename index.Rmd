@@ -35,7 +35,9 @@ For this course, I will compare Beatles songs written (predominantly) by Paul Mc
 ```{r}
 john_songs <- get_playlist_audio_features("", "6Wxl8tFi8QruTJ8ERPFkFc")
 paul_songs <- get_playlist_audio_features("", "64vy4b9yg9tcvrf0a3XvdF")
+
 george_songs <- get_playlist_audio_features("", "4DPiVpe75MnJkwNH31CBay")
+ringo_songs <- get_playlist_audio_features("", "6Zhk7J5Ptorytp5HoFXNOc")
 ```
 
 ```{r}
@@ -43,7 +45,8 @@ all_songs <-
   bind_rows(
     john_songs %>% mutate(category = "John"),
     paul_songs %>% mutate(category = "Paul"),
-    george_songs %>% mutate(category = "George")
+    george_songs %>% mutate(category = "George"),
+    ringo_songs %>% mutate(category = "Ringo")
   )
 
 head(all_songs)
@@ -52,15 +55,18 @@ head(all_songs)
 ```{r}
 ggplot(data = all_songs) + 
   geom_histogram(mapping = aes(x = valence, fill = category), position = "dodge", binwidth = 0.05) +
-  theme_classic()
+  theme_classic() + 
+  scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
 
 ggplot(data = all_songs) + 
   geom_histogram(mapping = aes(x = energy, fill = category), position = "dodge", binwidth = 0.05) +
-  theme_classic()
+  theme_classic()  + 
+  scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
 
 ggplot(data = all_songs) + 
   geom_histogram(mapping = aes(x = danceability, fill = category), position = "dodge", binwidth = 0.05) +
-  theme_classic()
+  theme_classic() + 
+  scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
 ```
 
 
@@ -80,8 +86,8 @@ ggplot(data = paul_songs) +
 ggplot(data = all_songs) + 
   geom_point(mapping = aes(x = valence, y = energy, color = category, alpha = 1, size = loudness)) +
   theme_classic() + 
-  scale_color_manual(values=wes_palette(n=3, name="GrandBudapest1")) + 
-  scale_size(range = c(-5, 5))
+  scale_color_manual(values=wes_palette(n=4, name="GrandBudapest1")) + 
+  scale_size(range = c(-3, 6))
 
 ggplot(data = all_songs) + 
   geom_point(mapping = aes(x = valence, y = energy, alpha = 1, size = loudness, color = mode)) +
@@ -89,45 +95,5 @@ ggplot(data = all_songs) +
   theme_light() 
 ```
 
-```{r}
-decades %>%                    # Start with awards.
-  mutate(
-    mode = ifelse(mode == 0, "Minor", "Major")
-  ) %>%
-  ggplot(                     # Set up the plot.
-    aes(
-      x = valence,
-      y = energy,
-      size = loudness,
-      colour = mode
-    )
-  ) +
-  geom_point() +              # Scatter plot.
-  geom_rug(size = 0.1) +      # Add 'fringes' to show data distribution. 
-  facet_wrap(~category) +     # Separate charts per playlist.
-  scale_x_continuous(         # Fine-tune the x axis.
-    limits = c(0, 1),
-    breaks = c(0, 0.50, 1),   # Use grid-lines for quadrants only.
-    minor_breaks = NULL       # Remove 'minor' grid-lines.
-  ) +
-  scale_y_continuous(         # Fine-tune the y axis in the same way.
-    limits = c(0, 1),
-    breaks = c(0, 0.50, 1),
-    minor_breaks = NULL
-  ) +
-  scale_colour_brewer(        # Use the Color Brewer to choose a palette.
-    type = "qual",            # Qualitative set.
-    palette = "Paired"        # Name of the palette is 'Paired'.
-  ) +
-  scale_size_continuous(      # Fine-tune the sizes of each point.
-    trans = "exp",            # Use an exp transformation to emphasise loud.
-    guide = "none"            # Remove the legend for size.
-  ) +
-  theme_light() +             # Use a simpler theme.
-  labs(                       # Make the titles nice.
-    x = "Valence",
-    y = "Energy",
-    colour = "Mode"
-  )
-```
+
 
