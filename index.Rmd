@@ -12,6 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(spotifyr)
+# Color Palettes
+library(wesanderson)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
@@ -33,16 +35,34 @@ For this course, I will compare Beatles songs written (predominantly) by Paul Mc
 ```{r}
 john_songs <- get_playlist_audio_features("", "6Wxl8tFi8QruTJ8ERPFkFc")
 paul_songs <- get_playlist_audio_features("", "64vy4b9yg9tcvrf0a3XvdF")
-
+george_songs <- get_playlist_audio_features("", "4DPiVpe75MnJkwNH31CBay")
 ```
 
 ```{r}
 all_songs <- 
   bind_rows(
     john_songs %>% mutate(category = "John"),
-    paul_songs %>% mutate(category = "Paul")
+    paul_songs %>% mutate(category = "Paul"),
+    george_songs %>% mutate(category = "George")
   )
+
+head(all_songs)
 ```
+
+```{r}
+ggplot(data = all_songs) + 
+  geom_histogram(mapping = aes(x = valence, fill = category), position = "dodge", binwidth = 0.05) +
+  theme_classic()
+
+ggplot(data = all_songs) + 
+  geom_histogram(mapping = aes(x = energy, fill = category), position = "dodge", binwidth = 0.05) +
+  theme_classic()
+
+ggplot(data = all_songs) + 
+  geom_histogram(mapping = aes(x = danceability, fill = category), position = "dodge", binwidth = 0.05) +
+  theme_classic()
+```
+
 
 
 
@@ -58,8 +78,9 @@ ggplot(data = paul_songs) +
   ggtitle("Paul", subtitle = "Valence vs energy")
 
 ggplot(data = all_songs) + 
-  geom_point(mapping = aes(x = energy, y = valence, color = category)) +
-  theme_classic()
+  geom_point(mapping = aes(x = valence, y = energy, color = category, alpha = 1, size = loudness)) +
+  theme_classic() + 
+  scale_color_manual(values=wes_palette(n=3, name="GrandBudapest1"))
 ```
 
 ```{r}
