@@ -68,10 +68,15 @@ ggplot(data = all_songs) +
   geom_histogram(mapping = aes(x = danceability, fill = category), position = "dodge", binwidth = 0.2) +
   theme_classic() + 
   scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
+
+ggplot(data = all_songs) + 
+  geom_histogram(mapping = aes(x = speechiness, fill = category), position = "dodge", binwidth = 0.1) +
+  theme_classic() + 
+  scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
 ```
 
 
-The graphs above show that, generally speaking, John Lennon's songs don't have lower valence than Paul McCartney's songs. This is surprising because it contradicts the statement John Lennon made to Playboy Magazine. However, it does appear to be the case that Paul's songs have a higher level of danceability, according to the Spotify API. On average, John's songs are higher in energy level. This makes sense, because John said he liked to write "shouting rock 'n' roll".
+The graphs above show that, generally speaking, John Lennon's songs don't have lower valence than Paul McCartney's songs. This is surprising because it contradicts the statement John Lennon made to Playboy Magazine. However, it does appear to be the case that Paul's songs have a higher level of danceability, according to the Spotify API. On average, John's songs are higher in energy level. This makes sense, because John said he liked to write "shouting rock 'n' roll". I also noticed that John has more "speechy" songs than Paul.
 
 
 ```{r echo = FALSE}
@@ -118,6 +123,21 @@ ggplot(data = all_songs) +
   theme(legend.position="none") + 
   scale_size(range = c(-2, 3))
 ```
+
+
+
+
+
+```{r echo = FALSE}
+ggplot(data = all_songs) + 
+  geom_point(mapping = aes(x = valence, y = speechiness, color = category, size = loudness), alpha = 0.7) +
+  theme_light() + 
+  facet_wrap(~category) +
+  scale_size(range = c(-3, 4)) +
+  scale_color_manual(values=wes_palette(n=4, name="GrandBudapest1")) +
+  theme(legend.position="none") 
+```
+
 
 
 
