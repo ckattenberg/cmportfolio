@@ -16,8 +16,6 @@ library(spotifyr)
 library(wesanderson)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
 ### Lennon-McCartney
 
 The Lennon-McCartney songwriting partnership was one of the most successful musical cooperations of all time. In the early days of the Beatles, John Lennon and Paul McCartney would often collaborate on songs extensively. As teenagers, they had made an agreement that they would both be credited with all songs written by either of them, whether jointly or separately. This is why all Beatles songs written by either Lennon or McCartney are officially credited to "Lennon-McCartney". Later on it became increasingly common for them to write songs separately. 
@@ -32,7 +30,7 @@ I would be curious to see whether Lennon's characterization of the differences b
 
 For this course, I will compare Beatles songs written (predominantly) by Paul McCartney to those written (predominantly) by John Lennon. To this end I created two playlists on Spotify. One playlist for the McCartney songs and one for the Lennon songs. I used the following webpage: http://www.myrsten.nu/worldnet/beatlesongs.htm as a guide to determine which song was written by whom. The corpus contains 142 songs in total (70 written by Paul McCartney and 72 written by John Lennon).
 
-```{r echo = FALSE}
+```{r include=FALSE}
 john_songs <- get_playlist_audio_features("", "6Wxl8tFi8QruTJ8ERPFkFc")
 paul_songs <- get_playlist_audio_features("", "64vy4b9yg9tcvrf0a3XvdF")
 
@@ -40,7 +38,7 @@ george_songs <- get_playlist_audio_features("", "4DPiVpe75MnJkwNH31CBay")
 ringo_songs <- get_playlist_audio_features("", "6Zhk7J5Ptorytp5HoFXNOc")
 ```
 
-```{r echo = FALSE}
+```{r include=FALSE}
 all_songs <- 
   bind_rows(
     john_songs %>% mutate(category = "John"),
@@ -52,48 +50,77 @@ all_songs <-
 head(all_songs)
 ```
 
+
+
+
 ```{r echo = FALSE}
 ggplot(data = all_songs) + 
-  geom_histogram(mapping = aes(x = valence, fill = category), position = "dodge", binwidth = 0.05) +
+  geom_histogram(mapping = aes(x = valence, fill = category), position = "dodge", binwidth = 0.2) +
   theme_classic() + 
   scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
 
 ggplot(data = all_songs) + 
-  geom_histogram(mapping = aes(x = energy, fill = category), position = "dodge", binwidth = 0.05) +
+  geom_histogram(mapping = aes(x = energy, fill = category), position = "dodge", binwidth = 0.2) +
   theme_classic()  + 
   scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
 
 ggplot(data = all_songs) + 
-  geom_histogram(mapping = aes(x = danceability, fill = category), position = "dodge", binwidth = 0.05) +
+  geom_histogram(mapping = aes(x = danceability, fill = category), position = "dodge", binwidth = 0.2) +
   theme_classic() + 
   scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
 ```
 
 
+The graphs above show that, generally speaking, John Lennon's songs don't have lower valence than Paul McCartney's songs. This is surprising because it contradicts the statement John Lennon made to Playboy Magazine. However, it does appear to be the case that Paul's songs have a higher level of danceability, according to the Spotify API. On average, John's songs are higher in energy level. This makes sense, because John said he liked to write "shouting rock 'n' roll".
 
 
 ```{r echo = FALSE}
-ggplot(data = john_songs) + 
-  geom_point(mapping = aes(x = energy, y = valence)) +
-  theme_classic() +
-  ggtitle("John", subtitle = "Valence vs energy")
-
-ggplot(data = paul_songs) + 
-  geom_point(mapping = aes(x = energy, y = valence)) + 
-  theme_classic() +
-  ggtitle("Paul", subtitle = "Valence vs energy")
-
 ggplot(data = all_songs) + 
-  geom_point(mapping = aes(x = valence, y = energy, color = category, alpha = 1, size = loudness)) +
+  geom_point(mapping = aes(x = valence, y = energy, color = category, size = loudness), alpha = 0.7) +
   theme_classic() + 
   scale_color_manual(values=wes_palette(n=4, name="GrandBudapest1")) + 
-  scale_size(range = c(-3, 6))
+  scale_size(range = c(-3, 4)) + 
+  
+  geom_text(                  # Add text labels from above.
+    aes(
+      x = valence,
+      y = energy,
+      label = label
+    ),
+    data = 
+      tibble(
+        label = c("Tomorrow Never Knows", "Back In The U.S.S.R."),
+        category = c("John", "Paul"),
+        valence = c(0.0534, 0.494),
+        energy = c(0.8290, 0.969)
+      ),
+    colour = "black",         # Override colour (not mode here).
+    size = 2.5,              # Override size (not loudness here).
+    hjust = "left",           # Align left side of label with the point.
+    vjust = "bottom",         # Align bottom of label with the point.
+    nudge_x = -0.1,          # Nudge the label slightly left.
+    nudge_y = 0.03           # Nudge the label slightly up.
+  )
 
-ggplot(data = all_songs) + 
-  geom_point(mapping = aes(x = valence, y = energy, alpha = 1, size = loudness, color = mode)) +
-  facet_wrap(~category) +
-  theme_light() 
 ```
+
+
+The differences between the Beatles' songwriting styles seems to be very small, at least in terms of valence and energy. I decided to also include some songs by George and Ringo, because it makes for a more interesting dataset. 
+
+
+
+```{r echo = FALSE}
+ggplot(data = all_songs) + 
+  geom_point(mapping = aes(x = valence, y = energy, color = category, size = loudness), alpha = 0.7) +
+  facet_wrap(~category) +
+  theme_light() +
+  scale_color_manual(values=wes_palette(n=4, name="GrandBudapest1")) + 
+  theme(legend.position="none") + 
+  scale_size(range = c(-2, 3))
+```
+
+
+
 
 
 
