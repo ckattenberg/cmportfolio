@@ -30,7 +30,11 @@ I would be curious to see whether Lennon's characterization of the differences b
 
 For this course, I will compare Beatles songs written (predominantly) by Paul McCartney to those written (predominantly) by John Lennon. To this end I created two playlists on Spotify. One playlist for the McCartney songs and one for the Lennon songs. I used the following webpage: http://www.myrsten.nu/worldnet/beatlesongs.htm as a guide to determine which song was written by whom. The corpus contains 142 songs in total (70 written by Paul McCartney and 72 written by John Lennon).
 
-```{r include=FALSE}
+### Code
+
+First, we will load the playlists containing each artist's songs. Then, we put them all into a single dataframe. 
+
+```{r}
 john_songs <- get_playlist_audio_features("", "6Wxl8tFi8QruTJ8ERPFkFc")
 paul_songs <- get_playlist_audio_features("", "64vy4b9yg9tcvrf0a3XvdF")
 
@@ -38,34 +42,33 @@ george_songs <- get_playlist_audio_features("", "4DPiVpe75MnJkwNH31CBay")
 ringo_songs <- get_playlist_audio_features("", "6Zhk7J5Ptorytp5HoFXNOc")
 ```
 
-```{r include=FALSE}
+```{r}
 all_songs <- 
   bind_rows(
     john_songs %>% mutate(category = "John"),
     paul_songs %>% mutate(category = "Paul"),
-    george_songs %>% mutate(category = "George"),
-    ringo_songs %>% mutate(category = "Ringo")
+    #george_songs %>% mutate(category = "George"),
+    #ringo_songs %>% mutate(category = "Ringo")
   )
 
-head(all_songs)
 ```
 
 
+Now, we can start exploring the data!
 
-
-```{r echo = FALSE}
+```{r}
 ggplot(data = all_songs) + 
-  geom_histogram(mapping = aes(x = valence, fill = category), position = "dodge", binwidth = 0.2) +
+  geom_histogram(mapping = aes(x = valence, fill = category), position = "dodge", binwidth = 0.1) +
   theme_classic() + 
   scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
 
 ggplot(data = all_songs) + 
-  geom_histogram(mapping = aes(x = energy, fill = category), position = "dodge", binwidth = 0.2) +
+  geom_histogram(mapping = aes(x = energy, fill = category), position = "dodge", binwidth = 0.1) +
   theme_classic()  + 
   scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
 
 ggplot(data = all_songs) + 
-  geom_histogram(mapping = aes(x = danceability, fill = category), position = "dodge", binwidth = 0.2) +
+  geom_histogram(mapping = aes(x = danceability, fill = category), position = "dodge", binwidth = 0.1) +
   theme_classic() + 
   scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
 
@@ -110,7 +113,7 @@ ggplot(data = all_songs) +
 ```
 
 
-The differences between the Beatles' songwriting styles seems to be very small, at least in terms of valence and energy. I decided to also include some songs by George and Ringo, because it makes for a more interesting dataset. 
+The differences between the Beatles' songwriting styles seems to be very small, at least in terms of valence and energy.
 
 
 
