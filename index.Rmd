@@ -30,7 +30,7 @@ I would be curious to see whether Lennon's characterization of the differences b
 
 For this course, I will compare Beatles songs written (predominantly) by Paul McCartney to those written (predominantly) by John Lennon. To this end I created two playlists on Spotify. One playlist for the McCartney songs and one for the Lennon songs. I used the following webpage: http://www.myrsten.nu/worldnet/beatlesongs.htm as a guide to determine which song was written by whom. The corpus contains 142 songs in total (70 written by Paul McCartney and 72 written by John Lennon).
 
-### Code
+### Data Exloration
 
 First, we will load the playlists containing each artist's songs. Then, we put them all into a single dataframe. 
 
@@ -115,7 +115,7 @@ ggplot(data = all_songs) +
 
 The differences between the Beatles' songwriting styles seems to be very small, at least in terms of valence and energy.
 
-
+ADD AVERAGE ON GRApH TO COMPARE! ADD THE THING ABOUT IRONIC
 
 ```{r echo = FALSE}
 ggplot(data = all_songs) + 
