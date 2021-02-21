@@ -92,7 +92,8 @@ ggplotly(ggplot_var)
 
 ***
 
-The differences between the Beatles' songwriting styles seems to be very small, at least in terms of valence and energy.
+* The differences between the two Beatles' songwriting styles seems to be very small, at least in terms of valence and energy.
+* I labelled two outliers in the dataset: *Tomorrow Never Knows* by John has a very low valence, and *Back In The USSR* has very high energy.
 
 
 ADD AVERAGE ON GRApH TO COMPARE! ADD THE THING ABOUT IRONIC
