@@ -81,9 +81,8 @@ ggplot_var <- ggplot(data = all_songs) +
       ),
     colour = "black",         # Override colour (not mode here).
     size = 2.5,              # Override size (not loudness here).
-    hjust = "middle",           # Align left side of label with the point.
+    hjust = "left",           # Align left side of label with the point.
     vjust = "bottom",         # Align bottom of label with the point.
-    nudge_x = 0.04,          # Nudge the label slightly left.
     nudge_y = 0.03           # Nudge the label slightly up.
   )
 
