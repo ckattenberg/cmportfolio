@@ -1,8 +1,12 @@
 ---
-title: "Lennon-McCartney"
+title: "Comparing the songwriting styles of John Lennon and Paul McCartney"
 author: "Céline Kattenberg"
 date: "2/10/2021"
-output: html_document
+output: 
+  flexdashboard::flex_dashboard:
+    storyboard: true
+    theme: "default"
+    css: custom_theme.css
 ---
 
 ```{r setup, include=FALSE}
@@ -12,11 +16,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r include=FALSE}
 library(tidyverse)
 library(spotifyr)
+library(plotly)
 # Color Palettes
 library(wesanderson)
+library(compmus)
+
 ```
 
-### Lennon-McCartney
+### Introduction Lennon-McCartney and Corpus
 
 The Lennon-McCartney songwriting partnership was one of the most successful musical cooperations of all time. In the early days of the Beatles, John Lennon and Paul McCartney would often collaborate on songs extensively. As teenagers, they had made an agreement that they would both be credited with all songs written by either of them, whether jointly or separately. This is why all Beatles songs written by either Lennon or McCartney are officially credited to "Lennon-McCartney". Later on it became increasingly common for them to write songs separately. 
 
@@ -26,15 +33,10 @@ In an interview for Playboy Magazine in 1980, Lennon said the following about hi
   
 I would be curious to see whether Lennon's characterization of the differences between his and McCartney's songwriting styles is accurate. The spotify API provides some features by which this potential difference could be explored. For example, the *valence* and *energy* features of the AudioFeaturesObject could be useful.
 
-### Corpus
+For this course, I will compare Beatles songs written (predominantly) by Paul McCartney to those written (predominantly) by John Lennon. To this end I created two playlists on Spotify. One playlist for the McCartney songs and one for the Lennon songs. I used the [this](http://www.myrsten.nu/worldnet/beatlesongs.htm) webpage as a guide to determine which song was written by whom. The corpus contains 142 songs in total (70 written by Paul McCartney and 72 written by John Lennon).
 
-For this course, I will compare Beatles songs written (predominantly) by Paul McCartney to those written (predominantly) by John Lennon. To this end I created two playlists on Spotify. One playlist for the McCartney songs and one for the Lennon songs. I used the following webpage: http://www.myrsten.nu/worldnet/beatlesongs.htm as a guide to determine which song was written by whom. The corpus contains 142 songs in total (70 written by Paul McCartney and 72 written by John Lennon).
 
-### Data Exloration
-
-First, we will load the playlists containing each artist's songs. Then, we put them all into a single dataframe. 
-
-```{r}
+```{r echo = FALSE}
 john_songs <- get_playlist_audio_features("", "6Wxl8tFi8QruTJ8ERPFkFc")
 paul_songs <- get_playlist_audio_features("", "64vy4b9yg9tcvrf0a3XvdF")
 
@@ -42,7 +44,7 @@ george_songs <- get_playlist_audio_features("", "4DPiVpe75MnJkwNH31CBay")
 ringo_songs <- get_playlist_audio_features("", "6Zhk7J5Ptorytp5HoFXNOc")
 ```
 
-```{r}
+```{r echo = FALSE}
 all_songs <- 
   bind_rows(
     john_songs %>% mutate(category = "John"),
@@ -54,40 +56,15 @@ all_songs <-
 ```
 
 
-Now, we can start exploring the data!
-
-```{r}
-ggplot(data = all_songs) + 
-  geom_histogram(mapping = aes(x = valence, fill = category), position = "dodge", binwidth = 0.1) +
-  theme_classic() + 
-  scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
-
-ggplot(data = all_songs) + 
-  geom_histogram(mapping = aes(x = energy, fill = category), position = "dodge", binwidth = 0.1) +
-  theme_classic()  + 
-  scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
-
-ggplot(data = all_songs) + 
-  geom_histogram(mapping = aes(x = danceability, fill = category), position = "dodge", binwidth = 0.1) +
-  theme_classic() + 
-  scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
-
-ggplot(data = all_songs) + 
-  geom_histogram(mapping = aes(x = speechiness, fill = category), position = "dodge", binwidth = 0.1) +
-  theme_classic() + 
-  scale_fill_manual(values=wes_palette(n=4, name="GrandBudapest1")) 
-```
-
-
-The graphs above show that, generally speaking, John Lennon's songs don't have lower valence than Paul McCartney's songs. This is surprising because it contradicts the statement John Lennon made to Playboy Magazine. However, it does appear to be the case that Paul's songs have a higher level of danceability, according to the Spotify API. On average, John's songs are higher in energy level. This makes sense, because John said he liked to write "shouting rock 'n' roll". I also noticed that John has more "speechy" songs than Paul.
-
+### Valence VS Energy
 
 ```{r echo = FALSE}
-ggplot(data = all_songs) + 
+ggplot_var <- ggplot(data = all_songs) + 
   geom_point(mapping = aes(x = valence, y = energy, color = category, size = loudness), alpha = 0.7) +
   theme_classic() + 
   scale_color_manual(values=wes_palette(n=4, name="GrandBudapest1")) + 
   scale_size(range = c(-3, 4)) + 
+  theme(legend.position="none") +
   
   geom_text(                  # Add text labels from above.
     aes(
@@ -104,20 +81,25 @@ ggplot(data = all_songs) +
       ),
     colour = "black",         # Override colour (not mode here).
     size = 2.5,              # Override size (not loudness here).
-    hjust = "left",           # Align left side of label with the point.
+    hjust = "right",           # Align left side of label with the point.
     vjust = "bottom",         # Align bottom of label with the point.
     nudge_x = -0.1,          # Nudge the label slightly left.
     nudge_y = 0.03           # Nudge the label slightly up.
   )
 
+ggplotly(ggplot_var)
+
 ```
 
+***
 
 The differences between the Beatles' songwriting styles seems to be very small, at least in terms of valence and energy.
 
+
 ADD AVERAGE ON GRApH TO COMPARE! ADD THE THING ABOUT IRONIC
 
-```{r echo = FALSE}
+
+```{r echo = FALSE, include = FALSE}
 ggplot(data = all_songs) + 
   geom_point(mapping = aes(x = valence, y = energy, color = category, size = loudness), alpha = 0.7) +
   facet_wrap(~category) +
@@ -128,10 +110,7 @@ ggplot(data = all_songs) +
 ```
 
 
-
-
-
-```{r echo = FALSE}
+```{r echo = FALSE, include = FALSE}
 ggplot(data = all_songs) + 
   geom_point(mapping = aes(x = valence, y = speechiness, color = category, size = loudness), alpha = 0.7) +
   theme_light() + 
@@ -141,9 +120,80 @@ ggplot(data = all_songs) +
   theme(legend.position="none") 
 ```
 
+### Chromagram John Lennon - Tomorrow Never Knows
 
+```{r echo = FALSE}
 
+tomorrow <-
+  get_tidy_audio_analysis("00oZhqZIQfL9P5CjOP6JsO") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+```
 
+```{r echo = FALSE}
+tomorrow %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
 
+```
 
+***
 
+* This is a chromagram of the song **Tomorrow Never Knows**, written primarily by *John Lennon*. The song has an experimental and psychedelic sound. 
+* The song lyrics are based on the book *The Psychedelic Experience: A Manual Based on The Tibetan Book of the Dead*. It was intended as a manual for people seeking spiritual enlightenment by using psychedelic drugs, such as LSD.
+* The opening lyrics of the song:    
+
+  Turn off your mind   
+  Relax and float downstream    
+  It is not dying     
+        
+  Are based on a line from the book: "Whenever in doubt, turn off your mind, relax, float downstream."
+
+* According to the Spotify API, it is the song with the lowest valence of the entire dataset. 
+* When I listen to it I notice that it is quite monotonous. However, I don't think it is necessarily a sad or angry song. 
+* The chromagram indeed confirms that this song is quite monotonous: almost all of the sound falls into the C-tone bracket.
+* John Lennon only used a single chord in the whole song. This creates a hypnotic sound.
+
+### Chromagram Paul Mccartney - Ob-La-Di Ob-La- Da
+
+```{r echo = FALSE}
+
+obla <-
+  get_tidy_audio_analysis("1gFNm7cXfG1vSMcxPpSxec") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+```
+
+```{r echo = FALSE}
+obla %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
+
+```
+### Discussion
