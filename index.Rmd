@@ -23,11 +23,11 @@ library(compmus)
 
 ```
 
-### What is the structure of 'Julia’ [chroma and timbre features]
+### What is the structure of 'Hey Jude’ (chroma and timbre features)
 
 ```{r echo = FALSE}
 bzt <-
-  get_tidy_audio_analysis("1H7gMYGykdtwZOV6s1N0by") %>%
+  get_tidy_audio_analysis("0aym2LBJBk9DAYuHHutrIl") %>%
   compmus_align(bars, segments) %>%
   select(bars) %>%
   unnest(bars) %>%
@@ -73,7 +73,7 @@ bind_rows(
 
 ***
 
-These two self-similarity matrices illustrate pitch and timbre based self similarity in the song "Norwegian Wood" written by John Lennon.
+These two self-similarity matrices illustrate pitch and timbre based self similarity in the song "Hey Jude" written by Paul McCartney.
 
 
 ### Introduction Lennon-McCartney and Corpus
