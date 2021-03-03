@@ -1,19 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;1,500&display=swap');
 
 .navbar {
-  background-color: rgb(62, 22, 88);
+  background-color: #064487;
   border-color: none;
   font-family: 'Montserrat', sans-serif;
   
 }
 
 .navbar :hover {
-  background-color: rgb(62, 22, 88);
+  background-color: #064487;
 }
 
 .storyboard-nav .sbframelist ul li.active {
-    background-color: rgb(62, 22, 88);
+    background-image: url("images/yellow_submarine.png"), linear-gradient(#064487, #019bd7);
+    background-size: 100% 100%;
 }
+
+.storyboard-nav .sbframelist ul li:hover {
+    background-image: url("images/yellow_submarine.png"), linear-gradient(#064487, #019bd7);
+    color: white;
+}
+
+.storyboard-nav .sbframelist ul li {
+    background-image: linear-gradient(#064487, #019bd7);
+    color: white;
+}
+
+
 
 body {
   font-family: 'Montserrat', sans-serif;
