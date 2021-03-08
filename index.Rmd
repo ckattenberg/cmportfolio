@@ -1,6 +1,6 @@
 ---
 title: "Comparing the songwriting styles of John Lennon and Paul McCartney"
-author: "Céline Kattenberg"
+author: "Céline"
 date: "2/10/2021"
 output: 
   flexdashboard::flex_dashboard:
@@ -22,7 +22,8 @@ library(plotly)
 library(wesanderson)
 library(compmus)
 library(shiny)
-
+library(gridExtra)
+library(ggridges)
 ```
 
 
@@ -38,6 +39,26 @@ I would be curious to see whether Lennon's characterization of the differences b
 
 For this course, I will compare Beatles songs written (predominantly) by Paul McCartney to those written (predominantly) by John Lennon. To this end I created two playlists on Spotify. One playlist for the McCartney songs and one for the Lennon songs. I used the [this](http://www.myrsten.nu/worldnet/beatlesongs.htm) webpage as a guide to determine which song was written by whom. The corpus contains 142 songs in total (70 written by Paul McCartney and 72 written by John Lennon).
 
+Paul McCartney once said about his songwriting relationship with John Lennon:
+
+> He’d write ‘Strawberry Fields,’ I’d go away and write ‘Penny Lane’ … to compete with each other. But it was very friendly competition.
+
+This seems to imply that the two songwriters influenced each other's writing to an extent. Therefore, I expect that the songs they wrote seperately during their time in the Beatles are probably more similar than the songs they wrote for their solo albums. To investigate this hypothesis, I will also use the first 2 solo albums by each artist to compare the differences in their early solo work to the differences in their writing styles when they were both in The Beatles.
+
+First solo albums:
+
+Paul McCartney:
+
+- McCartney (1970)
+
+- Ram (1971)
+
+John Lennon:
+
+- Plastic Ono Band (1970)
+
+- Imagine (1971)
+
 
 ```{r echo = FALSE}
 john_songs <- get_playlist_audio_features("", "6Wxl8tFi8QruTJ8ERPFkFc")
@@ -46,9 +67,10 @@ paul_songs <- get_playlist_audio_features("", "64vy4b9yg9tcvrf0a3XvdF")
 george_songs <- get_playlist_audio_features("", "4DPiVpe75MnJkwNH31CBay")
 ringo_songs <- get_playlist_audio_features("", "6Zhk7J5Ptorytp5HoFXNOc")
 
-solo_john <- get_playlist_audio_features("", "37i9dQZF1DX3WXnClxyI5d")
-solo_paul <- get_playlist_audio_features("", "37i9dQZF1DX2PB4Qx11qXU")
-solo_george <- get_playlist_audio_features("", "37i9dQZF1DWVDVRzaLYm4M")
+# First 3 non-beatles albums
+paul_solo <- get_playlist_audio_features("", "6t8llLJqn3SZfMjbGCkK7K")
+john_solo <- get_playlist_audio_features("", "1uqxGmA1qQNW7cWV4Tg49E")
+george_solo <- get_playlist_audio_features("", "5mZmeueIrx62psQA24DUFG")
 
 ```
 
@@ -61,25 +83,41 @@ all_songs <-
     #ringo_songs %>% mutate(category = "Ringo")
   )
 
-all_solo <- 
+all_solo <-
   bind_rows(
-    solo_john %>% mutate(category = "John"),
-    solo_paul %>% mutate(category = "Paul"),
-    #solo_george %>% mutate(category = "George")
+    paul_solo %>% mutate(category = "Paul"),
+    john_solo %>% mutate(category = "John"),
+    #george_solo %>% mutate(category = "George")
   )
 
+colors = c("#439AC8", "#F8D348")
 ```
 
 
 ### Valence VS Energy Beatles
 
 ```{r echo = FALSE}
-ggplot_var <- ggplot(data = all_songs) + 
-  geom_point(mapping = aes(x = valence, y = energy, color = category, size = loudness), alpha = 0.7) +
-  theme_classic() + 
-  #scale_color_manual(values=wes_palette(n=4, name="GrandBudapest1")) + 
-  scale_size(range = c(-3, 4)) + 
+ggplot_var <- ggplot(data = all_songs, mapping = aes(x = valence, y = energy, color = category)) + 
+  geom_point(aes(size = track.duration_ms / 60, alpha = loudness, label = track.name)) +
+  theme_light() + 
+  geom_rug(size = 0.1) +   # Add 'fringes' to show data distribution.
+  #scale_color_manual(values=colors) + 
+  scale_size(range = c(-2, 6)) + 
   theme(legend.position="none") +
+  labs(                            # Make the titles nice.
+    x = "Valence",
+    y = "Energy") +
+
+  scale_x_continuous(              # Fine-tune the x axis.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),        # Use grid-lines for quadrants only.
+    minor_breaks = NULL            # Remove 'minor' grid-lines.
+  ) +
+  scale_y_continuous(              # Fine-tune the y axis in the same way.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),
+    minor_breaks = NULL
+  ) +
   
   geom_text(                  # Add text labels from above.
     aes(
@@ -98,69 +136,178 @@ ggplot_var <- ggplot(data = all_songs) +
     size = 2.5,              # Override size (not loudness here).
     hjust = "left",           # Align left side of label with the point.
     vjust = "bottom",         # Align bottom of label with the point.
-    nudge_y = 0.03           # Nudge the label slightly up.
+    nudge_y = 0.03,         # Nudge the label slightly up.
+    nudge_x = 0.05
   )
 
 ggplotly(ggplot_var)
 
+#ADD AVERAGE ON GRApH TO COMPARE! ADD THE THING ABOUT IRONIC
 ```
 
 ***
 
 * The differences between the two Beatles' songwriting styles seems to be very small, at least in terms of valence and energy.
+* The lowest valence songs are all written by John.
+* Maybe the songwriting styles are similar because of the influence they had on each other. The friendly competition, as described in the introduction, may have been, in part, responsible for the distinctive "Beatles Sound".
 * It does seem like almost all of the lowest energy songs were written by Paul, except for Julia, the lowest energy song in the entire dataset, which was written by John.
-* I labelled three outliers in the dataset: *Tomorrow Never Knows* by John has a very low valence, and *Back In The USSR* has very high energy.
+* I labelled three outliers in the dataset: *Tomorrow Never Knows* by John has a very low valence, and *Back In The USSR* has very high energy. *Julia* has very low energy and relatively long valence.
 
 
-ADD AVERAGE ON GRApH TO COMPARE! ADD THE THING ABOUT IRONIC
-
-
-### Valence VS Energy Solo
+### Valence vs Energy Solo
 
 ```{r echo = FALSE}
-ggplot_solo <- ggplot(data = all_solo) + 
-  geom_point(mapping = aes(x = valence, y = energy, color = category), alpha = 0.7) +
-  theme_classic() + 
-  #scale_color_manual(values=wes_palette(n=4, name="GrandBudapest1")) + 
-  scale_size(range = c(-3, 4)) + 
-  theme(legend.position="none")
 
-ggplotly(ggplot_solo)
-
-```
-
-
-
-### All 4 Beatles compared
-
-
-```{r echo = FALSE}
-ggplot(data = all_songs) + 
-  geom_point(mapping = aes(x = valence, y = energy, color = category, size = loudness), alpha = 0.7) +
-  facet_wrap(~category) +
-  theme_light() +
-  #scale_color_manual(values=wes_palette(n=4, name="GrandBudapest1")) + 
-  theme(legend.position="none") + 
-  scale_size(range = c(-2, 3))
-```
-
-
-### Speechiness
-
-```{r echo = FALSE}
-ggplot(data = all_songs) + 
-  geom_point(mapping = aes(x = valence, y = speechiness, color = category, size = loudness), alpha = 0.7) +
+viz1 <- ggplot(data = all_solo, mapping = aes(x = valence, y = energy, color = category)) + 
+  geom_point(aes(size = track.duration_ms / 60, alpha = loudness, label = track.name)) +
   theme_light() + 
-  facet_wrap(~category) +
-  scale_size(range = c(-3, 4)) +
-  #scale_color_manual(values=wes_palette(n=4, name="GrandBudapest1")) +
-  theme(legend.position="none") 
+  geom_rug(size = 0.1) +
+  theme(legend.position="none") +
+  #scale_color_manual(values=colors) + 
+  scale_size(range = c(-2, 6)) +
+  #theme(legend.position="none")
+  labs(                            # Make the titles nice.
+    x = "Valence",
+    y = "Energy") +
+
+  scale_x_continuous(              # Fine-tune the x axis.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),        # Use grid-lines for quadrants only.
+    minor_breaks = NULL            # Remove 'minor' grid-lines.
+  ) +
+  scale_y_continuous(              # Fine-tune the y axis in the same way.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),
+    minor_breaks = NULL
+  ) 
+
+viz2 <- ggplot(data = all_solo) + 
+  geom_point(mapping = aes(x = danceability, y = acousticness, color = category, size = track.duration_ms / 60, alpha = loudness, label = track.name)) +
+  theme_classic() + 
+  geom_rug() +
+  #scale_color_manual(values=wes_palette(n=4, name="GrandBudapest1")) + 
+  scale_size(range = c(-2, 6)) 
+  #theme(legend.position="none")
+
+ggplotly(viz1)
 ```
 
 ***
 
-* John Lennon has speechier songs.
-* Paul's songs are often more acoustic?
+* We see more of a distinction in the solo albums.
+* John's song noticeably have lower valence than Paul's, on average.
+* John has many songs that are not very loud and have low valence and energy. As if he was taking a step back from the high energy, high valence Beatles sound.
+
+
+### The Beatles sound: solo albums compared to Bleatles albums (NEW)
+
+```{r echo = FALSE}
+viz1 <- ggplot(all_solo, aes(x=danceability, fill=category)) +
+  geom_density(alpha=0.7, color = NA)+
+  labs(x="Danceability", y="Density") +
+  theme_minimal()+
+  ggtitle("Solo") +
+  theme(legend.position="none") 
+
+
+viz2 <- ggplot(all_songs, aes(x=danceability, fill=category)) +
+  geom_density(alpha=0.6, color = NA)+
+  labs(x="Danceability") +
+  theme_minimal()+
+  ggtitle("Beatles")+
+  theme(axis.title.y=element_blank())
+
+viz3 <- ggplot(all_solo, aes(x=valence, fill=category)) +
+  geom_density(alpha=0.6, color = NA)+
+  labs(x="Valence", y="Density") +
+  scale_fill_manual(values=wes_palette(n = 2, name="GrandBudapest1")) +
+  theme_minimal() +
+  theme(legend.position="none") 
+
+
+viz4 <- ggplot(all_songs, aes(x=valence, fill=category)) +
+  geom_density(alpha=0.6, color = NA)+
+  labs(x="Valence") +
+  scale_fill_manual(values=wes_palette(n = 2, name="GrandBudapest1")) +
+  theme_minimal() +
+  theme(axis.title.y=element_blank())
+
+viz5 <- ggplot(all_solo, aes(x=acousticness, fill=category)) +
+  geom_density(alpha=0.6, color = NA)+
+  labs(x="Acousticness", y="Density") +
+  scale_fill_manual(values=wes_palette(n = 2, name="Darjeeling2")) +
+  theme_minimal() +
+  theme(legend.position="none") 
+
+
+viz6 <- ggplot(all_songs, aes(x=acousticness, fill=category)) +
+  geom_density(alpha=0.6, color = NA)+
+  labs(x="Acousticness") +
+  scale_fill_manual(values=wes_palette(n = 2, name="Darjeeling2")) +
+  theme_minimal() +
+  theme(axis.title.y=element_blank())
+
+grid.arrange(viz1, viz2, viz3, viz4, viz5, viz6)
+
+```
+
+***
+
+* The Beatles probability distributions for the different features overlap significantly more than the solo probability densities.
+* This suggests that the writing styles of John and Paul were a lot more similar when they were in The Beatles together.
+* They probably influenced each others writing.
+
+### Valence Of Beatles Albums Over Time (NEW)
+
+```{r echo = FALSE}
+album_order <- rev(c("Please Please Me (Remastered)", "With The Beatles (Remastered)", "A Hard Day's Night (Remastered)", "Beatles For Sale (Remastered)", "Help! (Remastered)", "Rubber Soul (Remastered)", "Revolver (Remastered)", "Sgt. Pepper's Lonely Hearts Club Band (Remastered)", "Sgt. Pepper's Lonely Hearts Club Band (Super Deluxe Edition)", "Magical Mystery Tour (Remastered)", "The Beatles (Remastered)", "Yellow Submarine (Remastered)", "Abbey Road (Remastered)", "Let It Be (Remastered)"))
+data1 <- filter(all_songs, track.album.release_date < 1973)
+
+plot1 <- ggplot(data = data1, aes(x = valence, y = factor(track.album.name, level = album_order), fill =..x..)) + 
+  geom_density_ridges_gradient(size = 0.1) + 
+  scale_fill_gradient(low = "blue", high = "orange") + 
+  theme_ridges() + 
+  theme(panel.background = element_rect(fill = "white")) +
+  theme(plot.background = element_rect(fill = "white")) +
+  theme(legend.position = "none") +
+  theme(axis.title.y = element_blank()) + 
+  theme(axis.text.y = element_text(size=5))+
+  labs(x = "Valence")
+  #+ theme(axis.text.y=element_blank())
+
+
+
+
+plot1
+
+
+```
+
+***
+
+* Early Beatles albums have higher valence than later Beatles albums.
+
+### Valence Beatles Albums John vs Paul (NEW)
+
+```{r echo=FALSE}
+plot2 <- ggplot(data = data1, aes(x = valence, y = factor(track.album.name, level = album_order), fill =category)) + 
+  geom_density_ridges(alpha = 0.9, size = 0.1) + 
+  scale_fill_manual(values=colors) + 
+  #scale_fill_gradient(low = "blue", high = "orange") + 
+  theme_ridges() + 
+  theme(panel.background = element_rect(fill = "white")) +
+  theme(plot.background = element_rect(fill = "white")) +
+  #theme(legend.position = "none") +
+  theme(axis.title.y = element_blank()) + 
+  theme(axis.text.y = element_text(size=5))
+  #+ theme(axis.text.y=element_blank())
+
+plot2
+```
+
+***
+
+* In most of the early Beatles albums, Paul's songs had lower valence than John's and Paul seems to have more variation in valence.
 
 
 ### Chromagram John Lennon - Tomorrow Never Knows
@@ -243,8 +390,10 @@ obla %>%
 ### What is the structure of 'Hey Jude’ (chroma and timbre features)
 
 ```{r echo = FALSE}
-bzt <-
-  get_tidy_audio_analysis("0aym2LBJBk9DAYuHHutrIl") %>%
+because <-
+  
+  get_tidy_audio_analysis("1rxoyGj1QuPoVi8fOft1Kt") %>%
+  #0aym2LBJBk9DAYuHHutrIl
   compmus_align(bars, segments) %>%
   select(bars) %>%
   unnest(bars) %>%
@@ -263,10 +412,10 @@ bzt <-
       )
   )
 bind_rows(
-  bzt %>% 
+  because %>% 
     compmus_self_similarity(pitches, "aitchison") %>% 
     mutate(d = d / max(d), type = "Chroma"),
-  bzt %>% 
+  because %>% 
     compmus_self_similarity(timbre, "euclidean") %>% 
     mutate(d = d / max(d), type = "Timbre")
 ) %>%
@@ -283,25 +432,163 @@ bind_rows(
   geom_tile() +
   coord_fixed() +
   facet_wrap(~type) +
-  scale_fill_viridis_c(option = "E", guide = "none") +
+  scale_fill_viridis_c() +
   theme_minimal() + 
   labs(x = "", y = "")
 ```
 
 ***
 
-These two self-similarity matrices illustrate pitch and timbre based self similarity in the song "Hey Jude" written by Paul McCartney.
+These two self-similarity matrices illustrate pitch and timbre based self similarity in the song "Because" written by John Lennon.
+
+
+
+### Chordograms (NEW)
+
+```{r echo = FALSE}
+circshift <- function(v, n) {
+  if (n == 0) v else c(tail(v, n), head(v, -n))
+}
+
+#      C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B
+major_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
+minor_chord <-
+  c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
+seventh_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
+
+major_key <-
+  c(6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88)
+minor_key <-
+  c(6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17)
+
+chord_templates <-
+  tribble(
+    ~name, ~template,
+    "Gb:7", circshift(seventh_chord, 6),
+    "Gb:maj", circshift(major_chord, 6),
+    "Bb:min", circshift(minor_chord, 10),
+    "Db:maj", circshift(major_chord, 1),
+    "F:min", circshift(minor_chord, 5),
+    "Ab:7", circshift(seventh_chord, 8),
+    "Ab:maj", circshift(major_chord, 8),
+    "C:min", circshift(minor_chord, 0),
+    "Eb:7", circshift(seventh_chord, 3),
+    "Eb:maj", circshift(major_chord, 3),
+    "G:min", circshift(minor_chord, 7),
+    "Bb:7", circshift(seventh_chord, 10),
+    "Bb:maj", circshift(major_chord, 10),
+    "D:min", circshift(minor_chord, 2),
+    "F:7", circshift(seventh_chord, 5),
+    "F:maj", circshift(major_chord, 5),
+    "A:min", circshift(minor_chord, 9),
+    "C:7", circshift(seventh_chord, 0),
+    "C:maj", circshift(major_chord, 0),
+    "E:min", circshift(minor_chord, 4),
+    "G:7", circshift(seventh_chord, 7),
+    "G:maj", circshift(major_chord, 7),
+    "B:min", circshift(minor_chord, 11),
+    "D:7", circshift(seventh_chord, 2),
+    "D:maj", circshift(major_chord, 2),
+    "F#:min", circshift(minor_chord, 6),
+    "A:7", circshift(seventh_chord, 9),
+    "A:maj", circshift(major_chord, 9),
+    "C#:min", circshift(minor_chord, 1),
+    "E:7", circshift(seventh_chord, 4),
+    "E:maj", circshift(major_chord, 4),
+    "G#:min", circshift(minor_chord, 8),
+    "B:7", circshift(seventh_chord, 11),
+    "B:maj", circshift(major_chord, 11),
+    "D#:min", circshift(minor_chord, 3)
+  )
+
+key_templates <-
+  tribble(
+    ~name, ~template,
+    "Gb:maj", circshift(major_key, 6),
+    "Bb:min", circshift(minor_key, 10),
+    "Db:maj", circshift(major_key, 1),
+    "F:min", circshift(minor_key, 5),
+    "Ab:maj", circshift(major_key, 8),
+    "C:min", circshift(minor_key, 0),
+    "Eb:maj", circshift(major_key, 3),
+    "G:min", circshift(minor_key, 7),
+    "Bb:maj", circshift(major_key, 10),
+    "D:min", circshift(minor_key, 2),
+    "F:maj", circshift(major_key, 5),
+    "A:min", circshift(minor_key, 9),
+    "C:maj", circshift(major_key, 0),
+    "E:min", circshift(minor_key, 4),
+    "G:maj", circshift(major_key, 7),
+    "B:min", circshift(minor_key, 11),
+    "D:maj", circshift(major_key, 2),
+    "F#:min", circshift(minor_key, 6),
+    "A:maj", circshift(major_key, 9),
+    "C#:min", circshift(minor_key, 1),
+    "E:maj", circshift(major_key, 4),
+    "G#:min", circshift(minor_key, 8),
+    "B:maj", circshift(major_key, 11),
+    "D#:min", circshift(minor_key, 3)
+  )
+```
+
+```{r echo = FALSE}
+albert <-
+  get_tidy_audio_analysis("5SwgE4wA0P7f6AEz2UQMB2") %>%
+  compmus_align(sections, segments) %>%
+  select(sections) %>%
+  unnest(sections) %>%
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      )
+  )
+
+martha <- get_tidy_audio_analysis("1swmf4hFMJYRNA8Rq9PVaW") %>%
+  compmus_align(sections, segments) %>%
+  select(sections) %>%
+  unnest(sections) %>%
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      )
+  )
+
+```
+
+```{r echo = FALSE}
+albert %>% 
+  compmus_match_pitch_template(
+    key_templates,         # Change to chord_templates if descired
+    method = "euclidean",  # Try different distance metrics
+    norm = "manhattan"     # Try different norms
+  ) %>%
+  ggplot(
+    aes(x = start + duration / 2, width = duration, y = name, fill = d)
+  ) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "")
+
+
+```
+
+***
+
+* Uncle Albert/Admiral Halsey is a song by Paul McCartney from his solo album Ram, with a very interesting structure.
+* The different sections of the song are clearly visible in the keygram.
+* You can see that some parts of the song are repeated several times.
 
 
 ### Discussion
 
-```{r echo=FALSE}
 
-plot1 <- ggplot(all_songs, aes(x = track.album.release_date, y = valence, colour = category, label = track.name)) +
-  geom_point() + 
-  theme_light() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggplotly(plot1)
-```
+
 
