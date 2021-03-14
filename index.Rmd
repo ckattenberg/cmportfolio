@@ -93,6 +93,55 @@ all_solo <-
 colors = c("#439AC8", "#F8D348")
 ```
 
+### Tempo histogram NEW
+
+```{r echo = FALSE}
+hist1 <- ggplot(data = all_songs, mapping = aes(x = tempo)) + 
+  geom_histogram(aes(fill = category), position="dodge") +
+  theme_light() +
+  ggtitle("The Beatles") +
+  theme(legend.position="none")
+
+hist2 <- ggplot(data = all_solo, mapping = aes(x = tempo, fill = category)) + 
+  geom_histogram( position="dodge") +
+  theme_light() +
+  ggtitle("Solo") +
+  theme(legend.position="none")
+
+hist3 <- ggplot(data = all_songs, mapping = aes(x = tempo, color = category)) + 
+  geom_density(alpha=0) +
+  theme_light() +
+  ggtitle("The Beatles")
+
+hist4 <- ggplot(data = all_solo, mapping = aes(x = tempo, color = category, alpha=0)) + 
+  geom_density_line(alpha=0) +
+  theme_light() +
+  ggtitle("Solo")
+
+grid.arrange(hist1, hist3, hist2, hist4)
+```
+
+***
+
+* The tempo distributions of Paul and John look quite similar in Beatles songs.
+* The slowest Beatles songs were written by John and the fastest by Paul.
+* The difference is a bit larger in their solor work. Paul McCartney has slower songs, on average.
+
+
+
+### Tempogram NEW
+
+```{r echo = FALSE}
+lucy <- get_tidy_audio_analysis("25yQPHgC35WNnnOUqFhgVR")
+
+lucy %>%
+  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) %>%
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+```
 
 ### Valence VS Energy Beatles
 
@@ -199,7 +248,7 @@ ggplotly(viz1)
 * John has many songs that are not very loud and have low valence and energy. As if he was taking a step back from the high energy, high valence Beatles sound.
 
 
-### The Beatles sound: solo albums compared to Bleatles albums (NEW)
+### The Beatles sound: solo albums compared to Bleatles albums
 
 ```{r echo = FALSE}
 viz1 <- ggplot(all_solo, aes(x=danceability, fill=category)) +
@@ -257,7 +306,7 @@ grid.arrange(viz1, viz2, viz3, viz4, viz5, viz6)
 * This suggests that the writing styles of John and Paul were a lot more similar when they were in The Beatles together.
 * They probably influenced each others writing.
 
-### Valence Of Beatles Albums Over Time (NEW)
+### Valence Of Beatles Albums Over Time
 
 ```{r echo = FALSE}
 album_order <- rev(c("Please Please Me (Remastered)", "With The Beatles (Remastered)", "A Hard Day's Night (Remastered)", "Beatles For Sale (Remastered)", "Help! (Remastered)", "Rubber Soul (Remastered)", "Revolver (Remastered)", "Sgt. Pepper's Lonely Hearts Club Band (Remastered)", "Sgt. Pepper's Lonely Hearts Club Band (Super Deluxe Edition)", "Magical Mystery Tour (Remastered)", "The Beatles (Remastered)", "Yellow Submarine (Remastered)", "Abbey Road (Remastered)", "Let It Be (Remastered)"))
@@ -287,7 +336,7 @@ plot1
 
 * Early Beatles albums have higher valence than later Beatles albums.
 
-### Valence Beatles Albums John vs Paul (NEW)
+### Valence Beatles Albums John vs Paul
 
 ```{r echo=FALSE}
 plot2 <- ggplot(data = data1, aes(x = valence, y = factor(track.album.name, level = album_order), fill =category)) + 
@@ -387,7 +436,7 @@ obla %>%
 
 ```
 
-### What is the structure of 'Hey Jude’ (chroma and timbre features)
+### What is the structure of 'Because’ (chroma and timbre features)
 
 ```{r echo = FALSE}
 because <-
@@ -443,7 +492,7 @@ These two self-similarity matrices illustrate pitch and timbre based self simila
 
 
 
-### Chordograms (NEW)
+### Keygram Uncle Albert/Admiral Halsey
 
 ```{r echo = FALSE}
 circshift <- function(v, n) {
@@ -562,7 +611,7 @@ martha <- get_tidy_audio_analysis("1swmf4hFMJYRNA8Rq9PVaW") %>%
 ```
 
 ```{r echo = FALSE}
-albert %>% 
+plot <- albert %>% 
   compmus_match_pitch_template(
     key_templates,         # Change to chord_templates if descired
     method = "euclidean",  # Try different distance metrics
@@ -574,8 +623,52 @@ albert %>%
   geom_tile() +
   scale_fill_viridis_c(guide = "none") +
   theme_minimal() +
-  labs(x = "Time (s)", y = "")
+  labs(x = "Time (s)", y = "") +
 
+  # Add lines and text at key moments
+  geom_vline(xintercept = 27,
+             color = "white",
+             size = 0.4) +
+  geom_vline(xintercept = 48,
+             color = "white",
+             size = 0.4) + 
+  geom_vline(xintercept = 67,
+             color = "white",
+             size = 0.4) +
+  geom_vline(xintercept = 356,
+             color = "white",
+             size = 0.4) +
+  annotate(geom="text", 
+          x=89, 
+          y="A", 
+          label="First drop",
+          color="white",
+          fontface = 2,
+          hjust=0) +
+  annotate(geom="text", 
+          x=200, 
+          y="B", 
+          label="Breakdown",
+          color="white",
+          fontface=2,
+          hjust=1) +
+  annotate(geom="text", 
+          x=223, 
+          y="A", 
+          label="Second drop",
+          color="white",
+          fontface=2,
+          hjust=0) +
+  annotate(geom="text", 
+          x=356, 
+          y="B", 
+          label="Breakdown",
+          color="white",
+          fontface=2,
+          hjust=1)
+
+
+ggplotly(plot)
 
 ```
 
@@ -584,6 +677,7 @@ albert %>%
 * Uncle Albert/Admiral Halsey is a song by Paul McCartney from his solo album Ram, with a very interesting structure.
 * The different sections of the song are clearly visible in the keygram.
 * You can see that some parts of the song are repeated several times.
+
 
 
 ### Discussion
