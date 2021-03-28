@@ -90,6 +90,12 @@ all_solo <-
     #george_solo %>% mutate(category = "George")
   )
 
+all <- 
+  bind_rows(
+    all_songs %>% mutate(solo_or_beatles = "The Beatles"),
+    all_solo %>% mutate(solo_or_beatles= "Solo"),
+  )
+  
 colors = c("#439AC8", "#F8D348")
 ```
 
@@ -127,7 +133,29 @@ grid.arrange(hist1, hist3, hist2, hist4)
 * The slowest Beatles songs were written by John and the fastest by Paul.
 * The difference is a bit larger in their solor work. Paul McCartney has slower songs, on average.
 
+### sakdjfnaklsjdnf
 
+```{r echo = FALSE}
+plot1 <- ggplot(data = all, mapping = aes(x = tempo)) + 
+  geom_histogram(aes(fill = category), position="dodge") +
+  theme_light() +
+  theme(legend.position="none") +
+  facet_wrap(~ solo_or_beatles, nrow = 2)
+
+plot2 <- ggplot(data = all, mapping = aes(x = tempo, color = category)) + 
+  geom_density(alpha=0) +
+  theme_light() +
+  facet_wrap(~ solo_or_beatles, nrow = 2)
+
+grid.arrange(plot1, plot2, nrow = 1)
+
+```
+
+***
+
+<div style="background-color:black">
+<iframe src="https://open.spotify.com/embed/track/6lSxM9BKcEZBSDKl2VODsF" width="582" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+</div>
 
 ### Tempogram NEW
 
