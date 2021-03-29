@@ -294,6 +294,8 @@ plot1
 ***
 
 * Early Beatles albums have higher valence than later Beatles albums.
+* A very clear progression is visible from the early, cheerful pop albums to the later, more experimental and sometimes moody albums.
+* There is no very clear turning point, but around the time of Revolver, albums started to have lower valence on average.
 
 ### Valence Beatles Albums John vs Paul
 
@@ -315,7 +317,10 @@ plot2
 
 ***
 
+* Here you can see the valence distributions for Beatles songs written by John and Paul for every Beatles album.
 * In most of the early Beatles albums, Paul's songs had lower valence than John's and Paul seems to have more variation in valence.
+* John's peaks are higher, which means the songs he wrote for the albums have less variance than Paul's.
+* For the Revolver album, John Lennon write some very low valence songs, according to the Spotify API anyway, like *Tomorrow never knows*
 
 
 ### Chromagram John Lennon - Tomorrow Never Knows
@@ -479,8 +484,10 @@ bind_rows(
 * Form:   Verse | Verse | Bridge |  
         | Verse | Bridge |  
         | Verse | Outro (with complete ending)  
+* These different parts of the songs can easily be indentified in the self-similarity matrices.
 * This song is interesting in this context, because it illustrates the difference between John Lennon and Paul McCartney's songwriting styles very well.
 * Most of the song is written by Paul McCartney. It is quite optimistic sounding ("We can work it out."), but the bridge, written by John Lennon sounds more dark and pessimistic (Life is very short, and there's no time...). The difference is stark, both melodically and lyrically.
+* The diagonal lines indicate parts that are repeated in the song. 
 
 
 ### Keygram Uncle Albert/Admiral Halsey
@@ -631,6 +638,7 @@ albert %>%
 * Uncle Albert/Admiral Halsey is a song by Paul McCartney from his solo album Ram, with a very interesting structure.
 * The different sections of the song are clearly visible in the keygram.
 * You can see that some parts of the song are repeated several times.
+* In the middle of the song, there's quite a striking change in the keygram. This is because this song is almost like two seperate songs stuck together. Hence the title ("Uncle Albert/Admiral Halsey").
 
 
 ### Tempogram
@@ -960,7 +968,7 @@ grid.arrange(forest_beatles, forest_solo, nrow = 1)
 * In the solo songs, the most important distinguishing factors are acousticness, valence and c06.
 
 
-### 3d plot
+### 3d plot Beatles songs most important features.
 
 ```{r echo=FALSE}
 plot_ly(indie_features_beatles, x= ~C, y= ~c04, z= ~danceability, type="scatter3d", mode="markers", color= ~category, alpha=0.8)
@@ -973,7 +981,7 @@ plot_ly(indie_features_beatles, x= ~C, y= ~c04, z= ~danceability, type="scatter3
 * This 3D plot shows Beatles songs along the 3 most distuinguishing axes.
 
 
-### 3d plot 2
+### 3d plot solo songs most important features.
 
 
 ```{r echo=FALSE}
@@ -1003,7 +1011,7 @@ John Lennon and Paul McCartney influenced each other's songwriting significantly
 This is particularly interesting, because their personalities were so starkly different. Emerick said the following about this difference:
 "Paul was meticulous and organized: he always carried a notebook around with him, in which he methodically wrote down lyrics and chord changes in his neat handwriting. In contrast, John seemed to live in chaos: he was constantly searching for scraps of paper that he’d hurriedly scribbled ideas on. Paul was a natural communicator; John couldn’t articulate his ideas well. Paul was the diplomat; John was the agitator. Paul was soft-spoken and almost unfailingly polite; John could be a right loudmouth and quite rude. Paul was willing to put in long hours to get a part right; John was impatient, always ready to move on to the next thing. Paul usually knew exactly what he wanted and would often take offense at criticism; John was much more thick-skinned and was open to hearing what others had to say. In fact, unless he felt especially strongly about something, he was usually amenable to change."
 
-These differences in personality started to show more in their solo work. Surprisingly, John Lennon started writing a lot of low-valence, low-energy songs, which is the complete opposite of how he described himself during the time of The Beatles: "There was a period when I thought I didn't write melodies, that Paul wrote those and I just wrote straight, shouting rock 'n' roll."
+These differences in personality started to show more in their solo work. Surprisingly, John Lennon started writing a lot of low-valence, low-energy songs, which is the complete opposite of how he described himself during the time of The Beatles: "There was a period when I thought I didn't write melodies, that Paul wrote those and I just wrote straight, shouting rock 'n' roll." McCartney's solo work is more similar to his work in the Beatles,  in terms of fetures from the Spotify API
 
 
 
