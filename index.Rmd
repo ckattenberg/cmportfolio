@@ -355,10 +355,11 @@ tomorrow %>%
 
 ***
 
+```{=html}
 <object data="https://open.spotify.com/embed/track/00oZhqZIQfL9P5CjOP6JsO" width="425" height="80" frameborder="0" allowtransparency="true">
     <embed src="https://open.spotify.com/embed/track/00oZhqZIQfL9P5CjOP6JsO" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
 </object>
-
+```
 
 * This is a chromagram of the song **Tomorrow Never Knows**, written primarily by *John Lennon*. The song has an experimental and psychedelic sound. 
 * Form: Intro | Verse | Verse | Verse | Instrumental |  
@@ -409,10 +410,12 @@ obla %>%
 
 ***
 
+```{=html}
 <object data="https://open.spotify.com/embed/track/1swmf4hFMJYRNA8Rq9PVaW" width="425" height="80" frameborder="0" allowtransparency="true">
     <embed src="https://open.spotify.com/embed/track/1swmf4hFMJYRNA8Rq9PVaW" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
 </object>
-  
+```
+
 * This is a chromagram of the song "Martha My Dear", written by Paul McCartney.
 * Form: Intro | Verse | Bridge | Bridge Extension |  
               | Verse (instrumental) | Bridge |  
@@ -475,10 +478,11 @@ bind_rows(
 
 ***
 
+```{=html}
 <object data="https://open.spotify.com/embed/track/7LNiAjyg9P2GKINTtN6Yt8" width="425" height="80" frameborder="0" allowtransparency="true">
     <embed src="https://open.spotify.com/embed/track/7LNiAjyg9P2GKINTtN6Yt8" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
 </object>
-
+```
 
 * These two self-similarity matrices illustrate pitch and timbre based self similarity in the song "'We Can Work It Out’" written by John Lennon and Paul McCartney together. 
 * Form:   Verse | Verse | Bridge |  
@@ -630,10 +634,11 @@ albert %>%
 
 ***
 
+```{=html}
 <object data="https://open.spotify.com/embed/track/5SwgE4wA0P7f6AEz2UQMB2?si=hLfnKpjMQtyEdDuCQWo-CQ" width="425" height="80" frameborder="0" allowtransparency="true">
     <embed src="https://open.spotify.com/embed/track/5SwgE4wA0P7f6AEz2UQMB2?si=hLfnKpjMQtyEdDuCQWo-CQ" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
 </object>
-
+```
 
 * Uncle Albert/Admiral Halsey is a song by Paul McCartney from his solo album Ram, with a very interesting structure.
 * The different sections of the song are clearly visible in the keygram.
@@ -657,9 +662,11 @@ lucy %>%
 
 ***
 
+```{=html}
 <object data="https://open.spotify.com/embed/track/25yQPHgC35WNnnOUqFhgVR" width="425" height="80" frameborder="0" allowtransparency="true">
     <embed src="https://open.spotify.com/embed/track/25yQPHgC35WNnnOUqFhgVR" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
 </object>
+```
 
 * The image on the left is a tempogram of the song "Lucy In The Sky With Diamonds", written by John Lennon.
 * Form: Intro | Verse | Bridge | Refrain |  
@@ -1002,9 +1009,11 @@ plot_ly(indie_features, x= ~acousticness, y= ~valence, z= ~c06, type="scatter3d"
 
 ***
 
+```{=html}
 <object data="https://open.spotify.com/embed/track/481payDhvwK4SluEdw2o5v" width="425" height="80" frameborder="0" allowtransparency="true">
     <embed src="https://open.spotify.com/embed/track/481payDhvwK4SluEdw2o5v" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
-</object>    
+</object>
+```  
 
 John Lennon and Paul McCartney influenced each other's songwriting significantly when they were in The Beatles together. Geoff Emerick, who served as the principal engineer for EMI on several later Beatles albums, realized that the two operated as a single creative unit while they were in The Beatles. “Even from the earliest days, I always felt that the artist was John Lennon and Paul McCartney, not the Beatles.”, he wrote in his memoir.
 
