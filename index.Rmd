@@ -1,6 +1,6 @@
 ---
 title: "Comparing the songwriting styles of John Lennon and Paul McCartney"
-author: "Céline"
+author: "Céline Kattenberg"
 date: "2/10/2021"
 output: 
   flexdashboard::flex_dashboard:
@@ -24,6 +24,27 @@ library(compmus)
 library(shiny)
 library(gridExtra)
 library(ggridges)
+library(tidymodels)
+library(ggdendro)
+library(heatmaply)
+```
+
+```{r include=FALSE}
+get_conf_mat <- function(fit) {
+  outcome <- .get_tune_outcome_names(fit)
+  fit %>% 
+    collect_predictions() %>% 
+    conf_mat(truth = outcome, estimate = .pred_class)
+}  
+
+get_pr <- function(fit) {
+  fit %>% 
+    conf_mat_resampled() %>% 
+    group_by(Prediction) %>% mutate(precision = Freq / sum(Freq)) %>% 
+    group_by(Truth) %>% mutate(recall = Freq / sum(Freq)) %>% 
+    ungroup() %>% filter(Prediction == Truth) %>% 
+    select(class = Prediction, precision, recall)
+}  
 ```
 
 
@@ -59,6 +80,12 @@ John Lennon:
 
 - Imagine (1971)
 
+***
+
+<img src="images/pauljohn.webp" width="100%">
+
+<div class="tenor-gif-embed" data-postid="4494672" data-share-method="host" data-width="100%" data-aspect-ratio="0.9066666666666666"><a href="https://tenor.com/view/adios-despedida-spanish-beatles-musica-gif-4494672">Los Beatles Se Despiden GIF</a> from <a href="https://tenor.com/search/adios-gifs">Adios GIFs</a></div><script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+
 
 ```{r echo = FALSE}
 john_songs <- get_playlist_audio_features("", "6Wxl8tFi8QruTJ8ERPFkFc")
@@ -83,6 +110,13 @@ all_songs <-
     #ringo_songs %>% mutate(category = "Ringo")
   )
 
+all_songs_george <- 
+  bind_rows(
+    john_songs %>% mutate(category = "John"),
+    paul_songs %>% mutate(category = "Paul"),
+    george_songs %>% mutate(category = "George"),
+  )
+
 all_solo <-
   bind_rows(
     paul_solo %>% mutate(category = "Paul"),
@@ -99,82 +133,6 @@ all <-
 colors = c("#439AC8", "#F8D348")
 ```
 
-### Tempo histogram NEW
-
-```{r echo = FALSE}
-hist1 <- ggplot(data = all_songs, mapping = aes(x = tempo)) + 
-  geom_histogram(aes(fill = category), position="dodge") +
-  theme_light() +
-  ggtitle("The Beatles") +
-  theme(legend.position="none")
-
-hist2 <- ggplot(data = all_solo, mapping = aes(x = tempo, fill = category)) + 
-  geom_histogram( position="dodge") +
-  theme_light() +
-  ggtitle("Solo") +
-  theme(legend.position="none")
-
-hist3 <- ggplot(data = all_songs, mapping = aes(x = tempo, color = category)) + 
-  geom_density(alpha=0) +
-  theme_light() +
-  ggtitle("The Beatles")
-
-hist4 <- ggplot(data = all_solo, mapping = aes(x = tempo, color = category, alpha=0)) + 
-  geom_density_line(alpha=0) +
-  theme_light() +
-  ggtitle("Solo")
-
-grid.arrange(hist1, hist3, hist2, hist4)
-```
-
-***
-
-* The tempo distributions of Paul and John look quite similar in Beatles songs.
-* The slowest Beatles songs were written by John and the fastest by Paul.
-* The difference is a bit larger in their solor work. Paul McCartney has slower songs, on average.
-
-### sakdjfnaklsjdnf
-
-```{r echo = FALSE}
-plot1 <- ggplot(data = all, mapping = aes(x = tempo)) + 
-  geom_histogram(aes(fill = category), position="dodge") +
-  theme_light() +
-  theme(legend.position="none") +
-  facet_wrap(~ solo_or_beatles, nrow = 2)
-
-plot2 <- ggplot(data = all, mapping = aes(x = tempo, color = category)) + 
-  geom_density(alpha=0) +
-  theme_light() +
-  facet_wrap(~ solo_or_beatles, nrow = 2)
-
-grid.arrange(plot1, plot2, nrow = 1)
-
-```
-
-***
-
-```
-{=html}
-<object data="https://open.spotify.com/embed/track/5SwgE4wA0P7f6AEz2UQMB2?si=hLfnKpjMQtyEdDuCQWo-CQ" width="280" height="140">
-    <embed src="https://open.spotify.com/embed/track/5SwgE4wA0P7f6AEz2UQMB2?si=hLfnKpjMQtyEdDuCQWo-CQ" width="280" height="140"></embed>
-</object>
-```
-
-
-
-### Tempogram NEW
-
-```{r echo = FALSE}
-lucy <- get_tidy_audio_analysis("25yQPHgC35WNnnOUqFhgVR")
-
-lucy %>%
-  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) %>%
-  ggplot(aes(x = time, y = bpm, fill = power)) +
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +
-  labs(x = "Time (s)", y = "Tempo (BPM)") +
-  theme_classic()
-```
 
 ### Valence VS Energy Beatles
 
@@ -209,10 +167,10 @@ ggplot_var <- ggplot(data = all_songs, mapping = aes(x = valence, y = energy, co
     ),
     data = 
       tibble(
-        label = c("Tomorrow Never Knows", "Back In The U.S.S.R.", "Julia"),
-        category = c("John", "Paul", "John"),
-        valence = c(0.0534, 0.494, 0.1930),
-        energy = c(0.8290, 0.969, 0.0953)
+        label = c("Tomorrow Never Knows", "Back In The U.S.S.R."),
+        category = c("John", "Paul"),
+        valence = c(0.0534, 0.494),
+        energy = c(0.8290, 0.969)
       ),
     colour = "black",         # Override colour (not mode here).
     size = 2.5,              # Override size (not loudness here).
@@ -233,7 +191,7 @@ ggplotly(ggplot_var)
 * The lowest valence songs are all written by John.
 * Maybe the songwriting styles are similar because of the influence they had on each other. The friendly competition, as described in the introduction, may have been, in part, responsible for the distinctive "Beatles Sound".
 * It does seem like almost all of the lowest energy songs were written by Paul, except for Julia, the lowest energy song in the entire dataset, which was written by John.
-* I labelled three outliers in the dataset: *Tomorrow Never Knows* by John has a very low valence, and *Back In The USSR* has very high energy. *Julia* has very low energy and relatively long valence.
+* I labelled two outliers in the dataset: *Tomorrow Never Knows* by John has a very low valence, and *Back In The USSR* has very high energy.
 
 
 ### Valence vs Energy Solo
@@ -277,67 +235,35 @@ ggplotly(viz1)
 ***
 
 * We see more of a distinction in the solo albums.
-* John's song noticeably have lower valence than Paul's, on average.
-* John has many songs that are not very loud and have low valence and energy. As if he was taking a step back from the high energy, high valence Beatles sound.
+* John's songs noticeably have lower valence than Paul's, on average.
+* John has many songs that are not very loud and have low valence and energy. As if he was taking a step back from the high energy, high valence Beatles sound. There appears to be a cluster of low energy, low valence songs by John Lennon.
+* The songs on Paul McCartney's first two solo albums are relatively high valence and high energy compared to John's first two solo albums.
+* We can conclude that Lennon and McCartney's songwriting styles started to become more different after the Beatles broke up.
 
-
-### The Beatles sound: solo albums compared to Bleatles albums
+### Tempo histograms
 
 ```{r echo = FALSE}
-viz1 <- ggplot(all_solo, aes(x=danceability, fill=category)) +
-  geom_density(alpha=0.7, color = NA)+
-  labs(x="Danceability", y="Density") +
-  theme_minimal()+
-  ggtitle("Solo") +
-  theme(legend.position="none") 
+plot1 <- ggplot(data = all, mapping = aes(x = tempo)) + 
+  geom_histogram(aes(fill = category), position="dodge") +
+  theme_light() +
+  theme(legend.position="none") +
+  facet_wrap(~ solo_or_beatles, nrow = 2)
 
+plot2 <- ggplot(data = all, mapping = aes(x = tempo, color = category)) + 
+  geom_density(alpha=0) +
+  theme_light() +
+  facet_wrap(~ solo_or_beatles, nrow = 2)
 
-viz2 <- ggplot(all_songs, aes(x=danceability, fill=category)) +
-  geom_density(alpha=0.6, color = NA)+
-  labs(x="Danceability") +
-  theme_minimal()+
-  ggtitle("Beatles")+
-  theme(axis.title.y=element_blank())
-
-viz3 <- ggplot(all_solo, aes(x=valence, fill=category)) +
-  geom_density(alpha=0.6, color = NA)+
-  labs(x="Valence", y="Density") +
-  scale_fill_manual(values=wes_palette(n = 2, name="GrandBudapest1")) +
-  theme_minimal() +
-  theme(legend.position="none") 
-
-
-viz4 <- ggplot(all_songs, aes(x=valence, fill=category)) +
-  geom_density(alpha=0.6, color = NA)+
-  labs(x="Valence") +
-  scale_fill_manual(values=wes_palette(n = 2, name="GrandBudapest1")) +
-  theme_minimal() +
-  theme(axis.title.y=element_blank())
-
-viz5 <- ggplot(all_solo, aes(x=acousticness, fill=category)) +
-  geom_density(alpha=0.6, color = NA)+
-  labs(x="Acousticness", y="Density") +
-  scale_fill_manual(values=wes_palette(n = 2, name="Darjeeling2")) +
-  theme_minimal() +
-  theme(legend.position="none") 
-
-
-viz6 <- ggplot(all_songs, aes(x=acousticness, fill=category)) +
-  geom_density(alpha=0.6, color = NA)+
-  labs(x="Acousticness") +
-  scale_fill_manual(values=wes_palette(n = 2, name="Darjeeling2")) +
-  theme_minimal() +
-  theme(axis.title.y=element_blank())
-
-grid.arrange(viz1, viz2, viz3, viz4, viz5, viz6)
+grid.arrange(plot1, plot2, nrow = 1)
 
 ```
 
 ***
 
-* The Beatles probability distributions for the different features overlap significantly more than the solo probability densities.
-* This suggests that the writing styles of John and Paul were a lot more similar when they were in The Beatles together.
-* They probably influenced each others writing.
+* The tempo distributions of Paul and John look quite similar in Beatles songs.
+* The slowest Beatles songs were written by John and the fastest by Paul.
+* The difference is a bit larger in their solo work. Paul McCartney has slower songs, on average.
+
 
 ### Valence Of Beatles Albums Over Time
 
@@ -374,7 +300,7 @@ plot1
 ```{r echo=FALSE}
 plot2 <- ggplot(data = data1, aes(x = valence, y = factor(track.album.name, level = album_order), fill =category)) + 
   geom_density_ridges(alpha = 0.9, size = 0.1) + 
-  scale_fill_manual(values=colors) + 
+  #scale_fill_manual(values=colors) + 
   #scale_fill_gradient(low = "blue", high = "orange") + 
   theme_ridges() + 
   theme(panel.background = element_rect(fill = "white")) +
@@ -424,7 +350,14 @@ tomorrow %>%
 
 ***
 
+<object data="https://open.spotify.com/embed/track/00oZhqZIQfL9P5CjOP6JsO" width="425" height="80" frameborder="0" allowtransparency="true">
+    <embed src="https://open.spotify.com/embed/track/00oZhqZIQfL9P5CjOP6JsO" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
+</object>
+
+
 * This is a chromagram of the song **Tomorrow Never Knows**, written primarily by *John Lennon*. The song has an experimental and psychedelic sound. 
+* Form: Intro | Verse | Verse | Verse | Instrumental |  
+                  | Verse | Verse | Verse | Verse | Outro (fade-out)  
 * The song lyrics are based on the book *The Psychedelic Experience: A Manual Based on The Tibetan Book of the Dead*. It was intended as a manual for people seeking spiritual enlightenment by using psychedelic drugs, such as LSD.
 * The opening lyrics of the song:    
 
@@ -439,12 +372,12 @@ tomorrow %>%
 * The chromagram indeed confirms that this song is quite monotonous: almost all of the sound falls into the C-tone bracket.
 * John Lennon only used a single chord in the whole song. This creates a hypnotic sound.
 
-### Chromagram Paul Mccartney - Ob-La-Di Ob-La- Da
+### Chromagram Paul Mccartney - Martha My Dear
 
 ```{r echo = FALSE}
 
 obla <-
-  get_tidy_audio_analysis("1gFNm7cXfG1vSMcxPpSxec") %>%
+  get_tidy_audio_analysis("1swmf4hFMJYRNA8Rq9PVaW") %>%
   select(segments) %>%
   unnest(segments) %>%
   select(start, duration, pitches)
@@ -469,12 +402,28 @@ obla %>%
 
 ```
 
-### What is the structure of 'Because’ (chroma and timbre features)
+***
+
+<object data="https://open.spotify.com/embed/track/1swmf4hFMJYRNA8Rq9PVaW" width="425" height="80" frameborder="0" allowtransparency="true">
+    <embed src="https://open.spotify.com/embed/track/1swmf4hFMJYRNA8Rq9PVaW" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
+</object>
+  
+* This is a chromagram of the song "Martha My Dear", written by Paul McCartney.
+* Form: Intro | Verse | Bridge | Bridge Extension |  
+              | Verse (instrumental) | Bridge |  
+              | Verse | Outro (with complete ending)  
+* The song has an unusual melodig structure. There is modulation from E-flat major to F major in the bridge.
+* We see a lot more melodic variation than in the previous chromagram. 
+
+
+
+### What is the structure of 'We Can Work It Out’ (chroma and timbre features)
 
 ```{r echo = FALSE}
 because <-
   
-  get_tidy_audio_analysis("1rxoyGj1QuPoVi8fOft1Kt") %>%
+  
+  get_tidy_audio_analysis("7LNiAjyg9P2GKINTtN6Yt8") %>%
   #0aym2LBJBk9DAYuHHutrIl
   compmus_align(bars, segments) %>%
   select(bars) %>%
@@ -521,8 +470,17 @@ bind_rows(
 
 ***
 
-These two self-similarity matrices illustrate pitch and timbre based self similarity in the song "Because" written by John Lennon.
+<object data="https://open.spotify.com/embed/track/7LNiAjyg9P2GKINTtN6Yt8" width="425" height="80" frameborder="0" allowtransparency="true">
+    <embed src="https://open.spotify.com/embed/track/7LNiAjyg9P2GKINTtN6Yt8" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
+</object>
 
+
+* These two self-similarity matrices illustrate pitch and timbre based self similarity in the song "'We Can Work It Out’" written by John Lennon and Paul McCartney together. 
+* Form:   Verse | Verse | Bridge |  
+        | Verse | Bridge |  
+        | Verse | Outro (with complete ending)  
+* This song is interesting in this context, because it illustrates the difference between John Lennon and Paul McCartney's songwriting styles very well.
+* Most of the song is written by Paul McCartney. It is quite optimistic sounding ("We can work it out."), but the bridge, written by John Lennon sounds more dark and pessimistic (Life is very short, and there's no time...). The difference is stark, both melodically and lyrically.
 
 
 ### Keygram Uncle Albert/Admiral Halsey
@@ -644,7 +602,7 @@ martha <- get_tidy_audio_analysis("1swmf4hFMJYRNA8Rq9PVaW") %>%
 ```
 
 ```{r echo = FALSE}
-plot <- albert %>% 
+albert %>% 
   compmus_match_pitch_template(
     key_templates,         # Change to chord_templates if descired
     method = "euclidean",  # Try different distance metrics
@@ -656,66 +614,396 @@ plot <- albert %>%
   geom_tile() +
   scale_fill_viridis_c(guide = "none") +
   theme_minimal() +
-  labs(x = "Time (s)", y = "") +
+  labs(x = "Time (s)", y = "") 
 
-  # Add lines and text at key moments
-  geom_vline(xintercept = 27,
-             color = "white",
-             size = 0.4) +
-  geom_vline(xintercept = 48,
-             color = "white",
-             size = 0.4) + 
-  geom_vline(xintercept = 67,
-             color = "white",
-             size = 0.4) +
-  geom_vline(xintercept = 356,
-             color = "white",
-             size = 0.4) +
-  annotate(geom="text", 
-          x=89, 
-          y="A", 
-          label="First drop",
-          color="white",
-          fontface = 2,
-          hjust=0) +
-  annotate(geom="text", 
-          x=200, 
-          y="B", 
-          label="Breakdown",
-          color="white",
-          fontface=2,
-          hjust=1) +
-  annotate(geom="text", 
-          x=223, 
-          y="A", 
-          label="Second drop",
-          color="white",
-          fontface=2,
-          hjust=0) +
-  annotate(geom="text", 
-          x=356, 
-          y="B", 
-          label="Breakdown",
-          color="white",
-          fontface=2,
-          hjust=1)
-
-
-ggplotly(plot)
 
 ```
 
+
+
 ***
+
+<object data="https://open.spotify.com/embed/track/5SwgE4wA0P7f6AEz2UQMB2?si=hLfnKpjMQtyEdDuCQWo-CQ" width="425" height="80" frameborder="0" allowtransparency="true">
+    <embed src="https://open.spotify.com/embed/track/5SwgE4wA0P7f6AEz2UQMB2?si=hLfnKpjMQtyEdDuCQWo-CQ" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
+</object>
+
 
 * Uncle Albert/Admiral Halsey is a song by Paul McCartney from his solo album Ram, with a very interesting structure.
 * The different sections of the song are clearly visible in the keygram.
 * You can see that some parts of the song are repeated several times.
 
 
+### Tempogram
 
-### Discussion
+```{r echo = FALSE}
+lucy <- get_tidy_audio_analysis("25yQPHgC35WNnnOUqFhgVR")
+
+lucy %>%
+  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) %>%
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+```
+
+***
+
+<object data="https://open.spotify.com/embed/track/25yQPHgC35WNnnOUqFhgVR" width="425" height="80" frameborder="0" allowtransparency="true">
+    <embed src="https://open.spotify.com/embed/track/25yQPHgC35WNnnOUqFhgVR" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
+</object>
+
+* The image on the left is a tempogram of the song "Lucy In The Sky With Diamonds", written by John Lennon.
+* Form: Intro | Verse | Bridge | Refrain |  
+              | Verse | Bridge | Refrain |  
+              | Verse | Refrain / Outro (fade-out)  
+* A lot of tempo shifts are visible in the tempogram. The different repeating sections are clearly visible.
+* At this point in his career, John Lennon was fond of experimenting with different songwriting techniques. 
 
 
+### The Beatles sound: solo albums compared to Bleatles albums
+
+```{r echo = FALSE}
+viz1 <- ggplot(all_solo, aes(x=danceability, fill=category)) +
+  geom_density(alpha=0.7, color = NA)+
+  labs(x="Danceability", y="Density") +
+  theme_minimal()+
+  ggtitle("Solo") +
+  theme(legend.position="none") 
+
+
+viz2 <- ggplot(all_songs, aes(x=danceability, fill=category)) +
+  geom_density(alpha=0.6, color = NA)+
+  labs(x="Danceability") +
+  theme_minimal()+
+  ggtitle("Beatles")+
+  theme(axis.title.y=element_blank())
+
+viz3 <- ggplot(all_solo, aes(x=valence, fill=category)) +
+  geom_density(alpha=0.6, color = NA)+
+  labs(x="Valence", y="Density") +
+  scale_fill_manual(values=wes_palette(n = 2, name="GrandBudapest1")) +
+  theme_minimal() +
+  theme(legend.position="none") 
+
+
+viz4 <- ggplot(all_songs, aes(x=valence, fill=category)) +
+  geom_density(alpha=0.6, color = NA)+
+  labs(x="Valence") +
+  scale_fill_manual(values=wes_palette(n = 2, name="GrandBudapest1")) +
+  theme_minimal() +
+  theme(axis.title.y=element_blank())
+
+viz5 <- ggplot(all_solo, aes(x=acousticness, fill=category)) +
+  geom_density(alpha=0.6, color = NA)+
+  labs(x="Acousticness", y="Density") +
+  scale_fill_manual(values=wes_palette(n = 2, name="Darjeeling2")) +
+  theme_minimal() +
+  theme(legend.position="none") 
+
+
+viz6 <- ggplot(all_songs, aes(x=acousticness, fill=category)) +
+  geom_density(alpha=0.6, color = NA)+
+  labs(x="Acousticness") +
+  scale_fill_manual(values=wes_palette(n = 2, name="Darjeeling2")) +
+  theme_minimal() +
+  theme(axis.title.y=element_blank())
+
+grid.arrange(viz1, viz2, viz3, viz4, viz5, viz6)
+
+```
+
+***
+
+* The Beatles probability distributions for the different features overlap significantly more than the solo probability densities.
+* This suggests that the writing styles of John and Paul were a lot more similar when they were in The Beatles together.
+* They probably influenced each others writing.
+
+
+### Classification
+
+```{r include=FALSE}
+indie_features_beatles <-
+  all_songs %>%  # For your portfolio, change this to the name of your corpus.
+  add_audio_analysis() %>% 
+  mutate(
+    category = factor(category),
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(
+        segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean",
+      )
+  ) %>%
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) %>%
+  mutate_at(vars(pitches, timbre), map, bind_rows) %>%
+  unnest(cols = c(pitches, timbre))
+```
+
+```{r include=FALSE}
+indie_recipe_beatles <-
+  recipe(
+   category ~
+      danceability +
+      energy +
+      loudness +
+      speechiness +
+      acousticness +
+      instrumentalness +
+      liveness +
+      valence +
+      tempo +
+      duration +
+      C + `C#|Db` + D + `D#|Eb` +
+      E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 + c02 + c03 + c04 + c05 + c06 +
+      c07 + c08 + c09 + c10 + c11 + c12,
+    data = indie_features_beatles,          # Use the same name as the previous block.
+  ) %>%
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors())      # Converts to z-scores.
+  # step_range(all_predictors())    # Sets range to [0, 1].
+
+  indie_cv_beatles <- indie_features_beatles %>% vfold_cv(5)
+```
+
+```{r include=FALSE}
+# Beatles nearest neighbors
+knn_model <-
+  nearest_neighbor(neighbors = 1) %>%
+  set_mode("classification") %>% 
+  set_engine("kknn")
+indie_knn <- 
+  workflow() %>% 
+  add_recipe(indie_recipe_beatles) %>% 
+  add_model(knn_model) %>% 
+  fit_resamples(
+    indie_cv_beatles, 
+    control = control_resamples(save_pred = TRUE)
+  )
+```
+
+```{r include=FALSE}
+indie_knn %>% get_conf_mat()
+classifier_beatles <- indie_knn %>% get_conf_mat() %>% autoplot(type = "mosaic")
+```
+```{r include=FALSE}
+# Random Forest beatles
+forest_model_beatles <-
+  rand_forest() %>%
+  set_mode("classification") %>% 
+  set_engine("ranger", importance = "impurity")
+
+indie_forest_beatles <- 
+  workflow() %>% 
+  add_recipe(indie_recipe_beatles) %>% 
+  add_model(forest_model_beatles) %>% 
+  fit_resamples(
+    indie_cv_beatles, 
+    control = control_resamples(save_pred = TRUE)
+  )
+```
+
+```{r include=FALSE}
+# Random forest beatles
+forest_beatles <- workflow() %>% 
+  add_recipe(indie_recipe_beatles) %>% 
+  add_model(forest_model_beatles) %>% 
+  fit(indie_features_beatles) %>% 
+  pluck("fit", "fit", "fit") %>%
+  ranger::importance() %>% 
+  enframe() %>% 
+  mutate(name = fct_reorder(name, value)) %>% 
+  ggplot(aes(name, value)) + 
+  geom_col() + 
+  coord_flip() +
+  theme_minimal() +
+  labs(x = NULL, y = "Importance")
+```
+
+
+```{r include=FALSE}
+indie_features <-
+  all_solo %>%  # For your portfolio, change this to the name of your corpus.
+  add_audio_analysis() %>% 
+  mutate(
+    category = factor(category),
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(
+        segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean",
+      )
+  ) %>%
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) %>%
+  mutate_at(vars(pitches, timbre), map, bind_rows) %>%
+  unnest(cols = c(pitches, timbre))
+```
+
+```{r include=FALSE}
+indie_recipe <-
+  recipe(
+   category ~
+      danceability +
+      energy +
+      loudness +
+      speechiness +
+      acousticness +
+      instrumentalness +
+      liveness +
+      valence +
+      tempo +
+      duration +
+      C + `C#|Db` + D + `D#|Eb` +
+      E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 + c02 + c03 + c04 + c05 + c06 +
+      c07 + c08 + c09 + c10 + c11 + c12,
+    data = indie_features,          # Use the same name as the previous block.
+  ) %>%
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors())      # Converts to z-scores.
+  # step_range(all_predictors())    # Sets range to [0, 1].
+
+  indie_cv <- indie_features %>% vfold_cv(5)
+```
+
+```{r include=FALSE}
+# Solo nearest neighbors
+knn_model <-
+  nearest_neighbor(neighbors = 1) %>%
+  set_mode("classification") %>% 
+  set_engine("kknn")
+indie_knn <- 
+  workflow() %>% 
+  add_recipe(indie_recipe) %>% 
+  add_model(knn_model) %>% 
+  fit_resamples(
+    indie_cv, 
+    control = control_resamples(save_pred = TRUE)
+  )
+```
+
+```{r include=FALSE}
+indie_knn %>% get_conf_mat()
+classifier_solo <- indie_knn %>% get_conf_mat() %>% autoplot(type = "mosaic") 
+```
+```{r include=FALSE}
+# Random Forest solo work
+forest_model <-
+  rand_forest() %>%
+  set_mode("classification") %>% 
+  set_engine("ranger", importance = "impurity")
+indie_forest <- 
+  workflow() %>% 
+  add_recipe(indie_recipe) %>% 
+  add_model(forest_model) %>% 
+  fit_resamples(
+    indie_cv, 
+    control = control_resamples(save_pred = TRUE)
+  )
+```
+
+```{r include=FALSE}
+# Random forest solo work
+forest_solo <- workflow() %>% 
+  add_recipe(indie_recipe) %>% 
+  add_model(forest_model) %>% 
+  fit(indie_features) %>% 
+  pluck("fit", "fit", "fit") %>%
+  ranger::importance() %>% 
+  enframe() %>% 
+  mutate(name = fct_reorder(name, value)) %>% 
+  ggplot(aes(name, value)) + 
+  geom_col() + 
+  coord_flip() +
+  theme_minimal() +
+  labs(x = NULL, y = "Importance") + 
+  theme(axis.text.y = element_text(size = 9))
+```
+```{r echo=FALSE}
+grid.arrange(classifier_beatles, classifier_solo)
+```
+
+***
+
+* To the left you can see the result of training a knn classifier on the Beatles work (top) and Solo work (bottom).
+* The classifier works better on the solo work, which was to be expected, because in their solo work, there is a bigger difference between their songwriting styles.
+
+
+### What are the most important features for classification according to Random Forest?
+
+```{r echo=FALSE}
+grid.arrange(forest_beatles, forest_solo, nrow = 1)
+```
+
+***
+
+* A Random Forest classifier was also trained on the data.
+* These two plots show the features that are most useful in distinguising between songs by Lennon and McCartney in their Beatles work (left) and solo work (right).
+* In the Beatles songs, the most important distinguishing factors are C, c04 and danceability. This makes sense because Paul's Beatles songs have higher danceability.
+* In the solo songs, the most important distinguishing factors are acousticness, valence and c06.
+
+
+### 3d plot
+
+```{r echo=FALSE}
+plot_ly(indie_features_beatles, x= ~C, y= ~c04, z= ~danceability, type="scatter3d", mode="markers", color= ~category, alpha=0.8)
+
+```
+
+***
+
+* I used the results from the Random Forest classifier to create a 3d plot showing the most distinguishing features.
+* This 3D plot shows Beatles songs along the 3 most distuinguishing axes.
+
+
+### 3d plot 2
+
+
+```{r echo=FALSE}
+plot_ly(indie_features, x= ~acousticness, y= ~valence, z= ~c06, type="scatter3d", mode="markers", color= ~category, alpha=0.8)
+
+```
+
+***
+
+* This 3D plot shows Solo songs along the 3 most distuinguishing axes.
+* Once again, we see that there is more difference in the solo albums than in the Beatles albums between Lennon and McCartney's songwriting styles.
+
+
+
+### Concluding remarks
+
+<img src="images/goodbye.jpg" width="100%">
+
+***
+
+<object data="https://open.spotify.com/embed/track/481payDhvwK4SluEdw2o5v" width="425" height="80" frameborder="0" allowtransparency="true">
+    <embed src="https://open.spotify.com/embed/track/481payDhvwK4SluEdw2o5v" width="425" height="80" frameborder="0" allowtransparency="true"></embed>
+</object>    
+
+John Lennon and Paul McCartney influenced each other's songwriting significantly when they were in The Beatles together. Geoff Emerick, who served as the principal engineer for EMI on several later Beatles albums, realized that the two operated as a single creative unit while they were in The Beatles. “Even from the earliest days, I always felt that the artist was John Lennon and Paul McCartney, not the Beatles.”, he wrote in his memoir.
+
+This is particularly interesting, because their personalities were so starkly different. Emerick said the following about this difference:
+"Paul was meticulous and organized: he always carried a notebook around with him, in which he methodically wrote down lyrics and chord changes in his neat handwriting. In contrast, John seemed to live in chaos: he was constantly searching for scraps of paper that he’d hurriedly scribbled ideas on. Paul was a natural communicator; John couldn’t articulate his ideas well. Paul was the diplomat; John was the agitator. Paul was soft-spoken and almost unfailingly polite; John could be a right loudmouth and quite rude. Paul was willing to put in long hours to get a part right; John was impatient, always ready to move on to the next thing. Paul usually knew exactly what he wanted and would often take offense at criticism; John was much more thick-skinned and was open to hearing what others had to say. In fact, unless he felt especially strongly about something, he was usually amenable to change."
+
+These differences in personality started to show more in their solo work. Surprisingly, John Lennon started writing a lot of low-valence, low-energy songs, which is the complete opposite of how he described himself during the time of The Beatles: "There was a period when I thought I didn't write melodies, that Paul wrote those and I just wrote straight, shouting rock 'n' roll."
 
 
 
